@@ -1,0 +1,31 @@
+/* 三张用户镜图已接入；盘髻图暂共用于挽髻、束稳与完成。镜框外透明，镜内人物保持原图。 */
+window.ZANHUA_ART = {
+  "grandma": "assets/art/grandma.png",
+  "portrait": "assets/art/portrait.png",
+  "portraitLoose": "assets/art/portrait-loose.png",
+  "portraitGathered": "assets/art/portrait-gathered.png",
+  "flowerJasmine": "assets/art/flower-jasmine.png",
+  "flowerMagnolia": "assets/art/flower-magnolia.png",
+  "flowerChrysanthemum": "assets/art/flower-chrysanthemum.png",
+  "flowerRed": "assets/art/flower-red.png",
+  "itemJasmine": "assets/art/item-jasmine.png",
+  "itemFishbone": "assets/art/item-fishbone.png",
+  "toolComb": "assets/art/tool-comb.png",
+  "toolTie": "assets/art/tool-tie.png",
+  "basket": "assets/art/basket.png",
+  "toolHair": "",
+  "mirrorLoose": "assets/art/mirror-loose.png",
+  "mirrorSmooth": "assets/art/mirror-smooth.png",
+  "mirrorGathered": "assets/art/mirror-bun.png",
+  "mirrorTied": "assets/art/mirror-bun.png",
+  "mirrorPinned": "assets/art/mirror-bun.png",
+  "wreathEveryday": "assets/art/wreath-everyday.png",
+  "wreathFestival": "assets/art/wreath-festival.png",
+  "lookEveryday": "",
+  "lookEverydayFinal": "",
+  "lookFestival": "",
+  "lookFestivalFinal": "",
+  "seaChatEveryday": "assets/art/sea-chat-everyday.png",
+  "seaChatFestival": "assets/art/sea-chat-festival.png"
+};
+

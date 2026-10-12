@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3ecdd">
+  <meta name="description" content="跟着蟳埔阿嬷，赴一场从采花、盘髻到簪花成妆的民俗之约。四章轻交互体验，收藏头顶上的花园。">
+  <title>簪花寻踪 · 一簪花开，一程山海</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="story-layout.css">
+  <link rel="stylesheet" href="journey.css?v=festival-portrait-2">
+  <script defer src="assets/art-config.js"></script>
+  <script defer src="story.js"></script>
+  <script defer src="journey-data.js"></script>
+  <script defer src="app.js?v=festival-portrait-2"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到体验内容</a>
+  <div class="landscape" aria-hidden="true"></div>
+  <div class="paper-grain" aria-hidden="true"></div>
+  <header class="site-header">
+    <button class="brand" data-action="home" aria-label="簪花寻踪首页"><span class="brand-seal">簪<br>花</span><span>簪花寻踪<small>FLOWERS OF XUNPU</small></span></button>
+    <nav aria-label="主要导航">
+      <button data-action="chapters" data-nav="chapters">寻花之旅</button>
+      <button data-action="gallery" data-nav="gallery">簪花图鉴</button>
+      <button data-action="about" data-nav="about">关于蟳埔</button>
+    </nav>
+    <button class="sound-button" data-action="sound" aria-pressed="false" title="开启海风环境音"><span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="sound-label">听海风</span></button>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="site-footer"><button data-action="settings" aria-label="体验设置与插画素材">体验设置</button></footer>
+  <dialog id="modal" aria-labelledby="modal-title"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <noscript>请开启浏览器 JavaScript，即可开始簪花之旅。</noscript>
+</body>
+</html>
+
+
