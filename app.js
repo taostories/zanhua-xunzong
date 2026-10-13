@@ -53,7 +53,7 @@ let state=readSave(), route={page:'home'},selected=null,drag=null,suppressClick=
 let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
 let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
-let audioContext=null,audioGain=null,audioSources=[],soundOn=false;
+let audioContext=null,audioGain=null,audioSources=[],soundOn=false,audioTimer=null,musicStep=0,musicNextTime=0;
 // Warm the browser's image cache without waiting for a page turn or blocking render.
 const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
 function showBackground(src){
@@ -356,23 +356,36 @@ document.addEventListener('pointercancel',cancelDrag);
 document.addEventListener('lostpointercapture',()=>{if(drag)cancelDrag();});
 window.addEventListener('blur',cancelDrag);
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelDrag();if(audioContext?.state==='running')audioContext.suspend();}else if(soundOn)audioContext?.resume();});
+function scheduleMusicNote(time,frequency,duration=.28){
+ const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+ osc.type='triangle';osc.frequency.setValueAtTime(frequency,time);
+ gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(.055,time+.025);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);
+ osc.connect(gain);gain.connect(audioGain);osc.start(time);osc.stop(time+duration+.04);
+}
+function pumpMusic(){
+ if(!audioContext||!soundOn)return;
+ const now=audioContext.currentTime;if(!musicNextTime||musicNextTime<now-.2)musicNextTime=now+.03;
+ const notes=[0,2,4,7,9,7,4,2],root=261.63;
+ while(musicNextTime<now+.7){
+  const semitone=notes[musicStep%notes.length],octave=musicStep%16>11?2:1;
+  scheduleMusicNote(musicNextTime,root*Math.pow(2,(semitone+12*octave)/12),.26);
+  if(musicStep%4===0)scheduleMusicNote(musicNextTime,root*Math.pow(2,(semitone-12)/12),.34);
+  musicStep++;musicNextTime+=.34;
+ }
+}
+function startMusic(){musicStep=0;musicNextTime=0;clearInterval(audioTimer);pumpMusic();audioTimer=setInterval(pumpMusic,120);}
+function stopMusic(){clearInterval(audioTimer);audioTimer=null;musicNextTime=0;}
 async function toggleSound(){
  try{
   if(!audioContext){
-    const Context=window.AudioContext||window.webkitAudioContext;if(!Context){toast('这个浏览器暂不支持环境音。');return;}
-    audioContext=new Context();audioGain=audioContext.createGain();audioGain.gain.value=0;audioGain.connect(audioContext.destination);
-    const length=audioContext.sampleRate*6,buffer=audioContext.createBuffer(1,length,audioContext.sampleRate),data=buffer.getChannelData(0);let prev=0;
-    for(let i=0;i<length;i++){prev=(prev+.025*(Math.random()*2-1))/1.025;data[i]=prev*3.2;}
-    const noise=audioContext.createBufferSource();noise.buffer=buffer;noise.loop=true;
-    const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=620;
-    const tide=audioContext.createGain();tide.gain.value=.45;
-    const lfo=audioContext.createOscillator();lfo.frequency.value=.12;
-    const lfoGain=audioContext.createGain();lfoGain.gain.value=.25;lfo.connect(lfoGain);lfoGain.connect(tide.gain);
-    noise.connect(filter);filter.connect(tide);tide.connect(audioGain);noise.start();lfo.start();audioSources=[noise,lfo];
+   const Context=window.AudioContext||window.webkitAudioContext;if(!Context){toast('这个浏览器暂不支持背景音乐。');return;}
+   audioContext=new Context();audioGain=audioContext.createGain();audioGain.gain.value=0;audioGain.connect(audioContext.destination);
   }
-  await audioContext.resume();soundOn=!soundOn;audioGain.gain.setTargetAtTime(soundOn?.32:0,audioContext.currentTime,.25);
-  const b=$('.sound-button');b.setAttribute('aria-pressed',String(soundOn));b.title=soundOn?'关闭海风环境音':'开启海风环境音';$('.sound-label').textContent=soundOn?'海风轻响':'听海风';toast(soundOn?'海风轻响 · 合成环境音已开启':'海风已静音');
- }catch{toast('环境音暂时无法播放，请稍后再试。');}
+  await audioContext.resume();soundOn=!soundOn;
+  audioGain.gain.setTargetAtTime(soundOn?.42:0,audioContext.currentTime,.18);
+  if(soundOn)startMusic();else stopMusic();
+  const b=$('.sound-button');b.setAttribute('aria-pressed',String(soundOn));b.title=soundOn?'关闭轻快音乐':'开启轻快音乐';$('.sound-label').textContent=soundOn?'音乐播放中':'听音乐';toast(soundOn?'轻快音乐已开启':'音乐已静音');
+ }catch{toast('背景音乐暂时无法播放，请稍后再试。');}
 }
 function speakItem(id,button){if(!('speechSynthesis' in window)){toast('此设备暂无可用的朗读功能。');return;}if(speechSynthesis.speaking){speechSynthesis.cancel();button.textContent='听这段故事';return;}const it=ITEMS.find(i=>i.id===id),u=new SpeechSynthesisUtterance(it.story);u.lang='zh-CN';u.rate=.86;u.pitch=1;const voice=speechSynthesis.getVoices().find(v=>v.lang.startsWith('zh'));if(voice)u.voice=voice;button.textContent='停止朗读';u.onend=()=>{if(button.isConnected)button.textContent='听这段故事';};u.onerror=()=>{if(button.isConnected)button.textContent='听这段故事';toast('设备语音暂不可用，你也可以阅读这段花簪小记。');};speechSynthesis.speak(u);}
 function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败'));im.src=src;});}
