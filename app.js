@@ -52,8 +52,7 @@ function readSave(){
 let state=readSave(), route={page:'home'},selected=null,drag=null,suppressClick=false,toastTimer,dragFrame,handledTouchSource=null;
 let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
-let dialogue='', dialogueSpeaker='阿嬷', art={}, artBlobs={}, db=null, exportBusy=false;
-let artImages={};
+let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
 let audioContext=null,audioGain=null,audioSources=[],soundOn=false;
 function save(){if(replaySnapshot)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{toast('浏览器暂时无法保存进度，本次体验仍可继续。');}}
 function unlocked(i){return i===0||state.completed[i-1];}
@@ -333,9 +332,10 @@ async function openArtDB(){return new Promise(resolve=>{if(!window.indexedDB)ret
 async function readImported(){if(!db)return {};return new Promise(resolve=>{const out={},tx=db.transaction('images','readonly'),req=tx.objectStore('images').openCursor();req.onsuccess=()=>{const c=req.result;if(c){out[c.key]=c.value;c.continue();}};tx.oncomplete=()=>resolve(out);tx.onerror=()=>resolve({});});}
 async function persistArt(key,blob){if(!db)throw new Error('本地存储不可用');return new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite');tx.objectStore('images').put(blob,key);tx.oncomplete=resolve;tx.onerror=reject;tx.onabort=reject;});}
 async function resolveArt(){
- Object.values(art).filter(s=>s.startsWith('blob:')).forEach(s=>URL.revokeObjectURL(s));art={};artImages={};
+ Object.values(art).filter(s=>s.startsWith('blob:')).forEach(s=>URL.revokeObjectURL(s));
  const candidates={...window.ZANHUA_ART};Object.entries(artBlobs).forEach(([key,blob])=>candidates[key]=URL.createObjectURL(blob));
- await Promise.all(Object.entries(candidates).map(async([key,src])=>{if(!src)return;try{artImages[key]=await loadImage(src);art[key]=src;}catch{if(src.startsWith('blob:'))URL.revokeObjectURL(src);}}));
+ // Let each visible image load independently; later chapters must not block this scene.
+ art=Object.fromEntries(Object.entries(candidates).filter(([,src])=>src));
 }
 document.addEventListener('change',async e=>{
  if(e.target.id!=='art-upload')return;
