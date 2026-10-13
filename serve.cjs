@@ -1,4 +1,5 @@
 'use strict';
+require('./build-web.cjs');
 // 无依赖静态服务。运行 node serve.cjs，浏览器打开 http://127.0.0.1:5188
 const http=require('node:http');
 const fs=require('node:fs');

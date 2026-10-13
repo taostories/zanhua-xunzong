@@ -178,5 +178,9 @@ body[data-page=home] .landscape:after{background:linear-gradient(180deg,#19231c1
 .photo-ending .ending-photo{width:min(850px,100%,max(400px,calc((100dvh - 410px)*16/9)));margin-top:0}
 .photo-ending .ending-note{width:min(850px,100%);padding:20px 30px;text-align:center}
 .photo-ending .ending-actions{justify-content:center}
+.fade-in{animation:none}
+.landscape{transition:none}
+.paper-grain{display:none}
+body[data-page=home] .landscape{background-position:center}
 @media(max-width:520px){.photo-story .ending-photo,.photo-ending .ending-photo{width:100%;margin-top:12px}.photo-story .story-dialogue{padding:18px}.photo-story .story-dialogue>p{min-height:0}.photo-ending .ending-note{padding:20px 18px}.photo-ending .ending-note h1{font-size:26px}.photo-ending .ending-note p{font-size:16px}}
 

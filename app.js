@@ -81,7 +81,8 @@ function navigate(page,chapter){
 function render(){
   syncWreathArt();
   const scene=route.page==='story'?STORY[route.key].scene:route.page==='game'?(route.chapter+1):route.page==='ending'?4:1;
-  $('.landscape').style.backgroundImage=`url('assets/scene-${scene}.webp')`;
+  const background=route.page==='home'?'assets/cover-harbor.webp':`assets/scene-${scene}.webp`;
+  $('.landscape').style.backgroundImage=`url('${background}')`;
   document.body.dataset.page=route.page;document.body.dataset.chapter=route.page==='game'?route.chapter+1:'';
   $$('[data-nav]').forEach(n=>n.classList.toggle('active',n.dataset.nav===route.page||(n.dataset.nav==='chapters'&&route.page==='game')));
   const views={home:homeView,chapters:chaptersView,game:gameView,gallery:galleryView,about:aboutView,ending:endingView,story:storyView};
@@ -348,6 +349,6 @@ document.addEventListener('change',async e=>{
 });
 async function clearImportedArt(){try{if(db)await new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite');tx.objectStore('images').clear();tx.oncomplete=resolve;tx.onerror=reject;});artBlobs={};await resolveArt();render();showSettings();toast('已清除本地插画副本，原文件不受影响。');}catch{toast('本地插画暂时无法清除，请重试。');}}
 render();
-(async()=>{db=await openArtDB();artBlobs=await readImported();await resolveArt();if(Object.keys(art).length)render();})();
+(async()=>{db=await openArtDB();artBlobs=await readImported();if(Object.keys(artBlobs).length){await resolveArt();render();}})();
 })();
 

@@ -1,6 +1,12 @@
 # 簪花寻踪 · 当前试玩版
 
-双击“启动体验.cmd”，访问 http://127.0.0.1:5188，也可直接打开 index.html。HTML / CSS / JavaScript，无需构建或登录，本地相对路径资源。
+双击“启动体验.cmd”，访问 http://127.0.0.1:5188，也可直接打开 index.html。HTML / CSS / JavaScript，无需安装依赖或登录，本地相对路径资源。
+
+线上体验：https://taostories.github.io/zanhua-xunzong/
+
+网页入口已合并为一份样式和一份脚本，原始源文件仍保留供修改。修改 JS / CSS / 图片配置后运行 `node build-web.cjs`，会生成带内容版本号的入口文件并更新 index.html；重新启动本地服务器也会自动执行。发布时同步 index.html 和其引用的 assets 文件。
+
+当前首页使用无人物海湾全景，结尾按家常 / 节庆款式展示对应合照；网页素材使用压缩 WebP，原始图片另存保留。
 
 ## 四章体验
 
