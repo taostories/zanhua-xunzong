@@ -89,7 +89,7 @@ function render(){
   if(route.page==='game'&&route.chapter===0&&state.pendingFlower&&!picking)queueMicrotask(showFlowerDialogue);
   document.title=`${route.page==='game'?CHAPTERS[route.chapter].title+' · ':''}簪花寻踪 · 民俗交互体验`;
 }
-function homeView(){return `<section class="quiet-home"><div class="home-title"><h1>簪花寻踪</h1><p>海风捎来花香，阿嬷在院子里等我。</p><button class="primary" data-action="begin">${state.cursor||state.seen.length||totalCompleted()?'继续这一日':'走进小院'} <span class="arrow">⟶</span></button>${state.seen.length||totalCompleted()?'<button class="text-button" data-action="reset-confirm">从头体验</button>':''}</div></section>`;}
+function homeView(){return `<section class="quiet-home"><div class="home-title"><h1><img class="home-title-art" src="assets/art/title-flower-trace.webp" alt="簪花寻踪 · Flower Trace" width="1702" height="515" fetchpriority="high"></h1><p>海风捎来花香，阿嬷在院子里等我。</p><button class="primary" data-action="begin">${state.cursor||state.seen.length||totalCompleted()?'继续这一日':'走进小院'} <span class="arrow">⟶</span></button>${state.seen.length||totalCompleted()?'<button class="text-button" data-action="reset-confirm">从头体验</button>':''}</div></section>`;}
 function startStory(key,index=0){cancelDrag();clearSelection();route={page:'story',key,index};state.cursor={key,index};save();render();window.scrollTo(0,0);}
 function continueJourney(){if(state.cursor)return startStory(state.cursor.key,state.cursor.index);if(!state.seen.includes('opening'))return startStory('opening');const i=currentNext();if(state.completed[3])return state.seen.includes('ending')?navigate('ending'):startStory('after4');enterChapter(i);}
 function enterChapter(i){if(!unlocked(i))return toast('先陪阿嬷走完前一段花事。');if(state.completed[i]){
@@ -349,3 +349,4 @@ async function clearImportedArt(){try{if(db)await new Promise((resolve,reject)=>
 render();
 (async()=>{db=await openArtDB();artBlobs=await readImported();await resolveArt();if(Object.keys(art).length)render();})();
 })();
+

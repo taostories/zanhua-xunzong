@@ -157,3 +157,14 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 .drag-ghost.hair-ghost{width:110px!important;min-height:0!important;height:110px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:block!important;transform:translate(-50%,-50%)!important}
 .drag-ghost.hair-ghost img{width:100%!important;height:100%!important;max-height:none!important;object-fit:contain;filter:none}
 .drag-ghost.hair-ghost span{display:none!important}
+
+/* Supplied title artwork, with its dark background removed for the courtyard. */
+body[data-page=home] .landscape:after{background:linear-gradient(180deg,#19231c18,#19231c73 35%,#19231c80 65%,#19231c24)}
+.quiet-home{justify-content:center;align-items:center;padding:0 0 8vh}
+.home-title{width:min(900px,100%);max-width:900px;text-align:center;text-shadow:none}
+.home-title h1{font-size:inherit;line-height:1;letter-spacing:0;margin:0}
+.home-title-art{display:block;width:100%;height:auto;filter:drop-shadow(0 2px 5px #14211875)}
+.home-title>p{color:#fff8e9;text-shadow:0 1px 5px #18231c;margin:24px 0 30px}
+.home-title>.primary,.home-title>.text-button{margin-left:auto;margin-right:auto}
+.home-title>.text-button{color:#fff8e9;text-shadow:0 1px 5px #18231c}
+@media(max-width:520px){.quiet-home{padding:0 0 9vh}.home-title>p{font-size:14px;letter-spacing:.5px;margin:23px 0 27px}}
