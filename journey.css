@@ -140,12 +140,14 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 .chapter-4 .scene-workspace{justify-content:flex-start}
 .sea-chat-layout{justify-content:flex-start;min-height:0;padding-top:0}
 .sea-chat-layout:has(.solo-portrait){padding-top:28px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-content:start;justify-items:center;row-gap:0}
-.sea-chat-layout .sea-chat-art.solo-portrait{grid-row:1;width:min(100%,330px);height:auto;aspect-ratio:3/4;max-height:none;margin:0;display:block;position:relative;z-index:0}
+.chapter-4,.seaside-story{--seaside-portrait-width:330px}
+.sea-chat-layout .sea-chat-art.solo-portrait{grid-row:1;width:min(100%,var(--seaside-portrait-width));height:auto;aspect-ratio:3/4;max-height:none;margin:0;display:block;position:relative;z-index:0}
+.seaside-story .story-protagonist{width:min(100%,var(--seaside-portrait-width));height:auto;max-width:100%;aspect-ratio:3/4;object-position:center bottom}
 .sea-chat-art.solo-portrait img{display:block;width:100%;height:100%;margin:0;object-fit:contain;object-position:center bottom;vertical-align:bottom}
 .sea-chat-layout .visitor-conversation{position:relative;z-index:1}
 .sea-chat-layout:has(.solo-portrait) .visitor-conversation{grid-row:2;margin:-30px 0 0;align-self:start;background:#fff8e9}
 .sea-chat-layout .conversation-heading{justify-content:flex-end}
-@media(max-width:520px){.sea-chat-layout .sea-chat-art.solo-portrait{width:min(70vw,255px)}}
+@media(max-width:520px){.chapter-4,.seaside-story{--seaside-portrait-width:min(70vw,255px)}}
 
 /* Grandma faces the protagonist from the right in story conversations. */
 .story-screen.seaside-story .story-grandma:not(.story-protagonist){left:auto;right:5%;transform:scaleX(-1)}
