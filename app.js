@@ -56,13 +56,9 @@ let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs=
 let audioContext=null,audioGain=null,audioSources=[],soundOn=false;
 // Warm the browser's image cache without waiting for a page turn or blocking render.
 const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
-const backgrounds=window.ZANHUA_BACKGROUNDS||{};
-const backgroundURL=src=>backgrounds[src]?.src||src;
 function showBackground(src){
- const entry=backgrounds[src],full=backgroundURL(src);
- const priority=$('#scene-priority');if(priority&&priority.getAttribute('href')!==full)priority.href=full;
- // The inline preview paints immediately, even if the full image fails or is slow.
- $('.landscape').style.backgroundImage=`url('${full}')`+(entry?`,url('${entry.preview}')`:'');
+ const priority=$('#scene-priority');if(priority&&priority.getAttribute('href')!==src)priority.href=src;
+ $('.landscape').style.backgroundImage=`url('${src}')`;
 }
 function planImageWarmup(background,scene){
  const preferred=state.style==='festival'?'Festival':'Everyday',other=preferred==='Festival'?'Everyday':'Festival';
@@ -75,7 +71,7 @@ function planImageWarmup(background,scene){
  ];
  const next=route.page==='home'?currentNext():Math.max(0,Math.min(3,scene-1));
  const orderedChapters=[...chapters.slice(next),...chapters.slice(0,next)];
- const sources=[backgroundURL(background),...orderedChapters.map(chapter=>backgroundURL(chapter[0])),...$$('#main img').map(img=>img.src),
+ const sources=[background,...orderedChapters.map(chapter=>chapter[0]),...$$('#main img').map(img=>img.src),
   ...orderedChapters.flatMap(chapter=>chapter.slice(1)),...Object.values(art)];
  const ordered=[...new Set(sources.filter(Boolean).map(src=>new URL(src,document.baseURI).href))];
  for(const src of ordered)if(!imageWarmup.entries.has(src))imageWarmup.entries.set(src,{src,status:'pending',attempts:0});
