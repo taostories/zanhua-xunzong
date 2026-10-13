@@ -54,6 +54,55 @@ let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
 let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
 let audioContext=null,audioGain=null,audioSources=[],soundOn=false;
+// Warm the browser's image cache without waiting for a page turn or blocking render.
+const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
+function planImageWarmup(background,scene){
+ const preferred=state.style==='festival'?'Festival':'Everyday',other=preferred==='Festival'?'Everyday':'Festival';
+ const keys=(...names)=>names.map(name=>art[name]);
+ const chapters=[
+  ['assets/scene-1.webp',...keys('grandma','flowerJasmine','flowerMagnolia','flowerChrysanthemum','flowerRed','basket','itemJasmine')],
+  ['assets/scene-2.webp',...keys('mirrorLoose','toolComb','mirrorSmooth','toolTie','itemFishbone','mirrorGathered','mirrorTied','mirrorPinned')],
+  ['assets/scene-3.webp',...keys('wreath'+preferred,'wreath'+other,'look'+preferred,'look'+other)],
+  ['assets/scene-4.webp',...keys('grandma','seaChat'+preferred,'ending'+preferred,'look'+preferred+'Final','seaChat'+other,'ending'+other,'look'+other+'Final')]
+ ];
+ const next=route.page==='home'?currentNext():Math.max(0,Math.min(3,scene-1));
+ const sources=[background,...$$('#main img').map(img=>img.src),
+  ...chapters.slice(next).flat(),...chapters.slice(0,next).flat(),...Object.values(art)];
+ const ordered=[...new Set(sources.filter(Boolean).map(src=>new URL(src,document.baseURI).href))];
+ for(const src of ordered)if(!imageWarmup.entries.has(src))imageWarmup.entries.set(src,{src,status:'pending',attempts:0});
+ // Rebuild pending order after navigation/style selection; never restart active downloads.
+ const pending=ordered.map(src=>imageWarmup.entries.get(src)).filter(entry=>entry.status==='pending');
+ imageWarmup.queue=[...pending.filter(entry=>!entry.attempts),...pending.filter(entry=>entry.attempts)];
+ if(imageWarmup.started)scheduleImageWarmup(200);
+}
+function scheduleImageWarmup(delay=100){
+ clearTimeout(imageWarmup.timer);
+ imageWarmup.timer=setTimeout(pumpImageWarmup,delay);
+}
+function pumpImageWarmup(){
+ if(!imageWarmup.started)return;
+ while(imageWarmup.active<2&&imageWarmup.queue.length){
+  const entry=imageWarmup.queue.shift();if(entry.status!=='pending')continue;
+  entry.status='loading';entry.attempts++;imageWarmup.active++;
+  const img=new Image();img.fetchPriority='low';img.decoding='async';
+  let settled=false;
+  const finish=ok=>{
+   if(settled)return;settled=true;clearTimeout(timeout);img.onload=null;img.onerror=null;
+   imageWarmup.active--;entry.status=ok?'loaded':entry.attempts<2?'pending':'failed';
+   if(!ok){img.removeAttribute('src');if(entry.status==='pending')imageWarmup.queue.push(entry);}
+   scheduleImageWarmup();
+  };
+  // A slow/broken file cannot hold a slot forever. Retry once, after other images.
+  const timeout=setTimeout(()=>finish(false),15000);
+  img.onload=()=>finish(true);img.onerror=()=>finish(false);img.src=entry.src;
+ }
+}
+function startImageWarmup(){
+ if(imageWarmup.started)return;imageWarmup.started=true;scheduleImageWarmup();
+}
+// Give visible cover/title requests a head start, but don't depend on a slow load event.
+window.addEventListener('load',startImageWarmup,{once:true});
+setTimeout(startImageWarmup,1800);
 function save(){if(replaySnapshot)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch{toast('浏览器暂时无法保存进度，本次体验仍可继续。');}}
 function unlocked(i){return i===0||state.completed[i-1];}
 function owned(id){return state.completed[ITEMS.findIndex(i=>i.id===id)];}
@@ -89,6 +138,7 @@ function render(){
   $('#main').innerHTML=`<div class="fade-in">${views[route.page]()}</div>`;
   if(route.page==='game'&&route.chapter===0&&state.pendingFlower&&!picking)queueMicrotask(showFlowerDialogue);
   document.title=`${route.page==='game'?CHAPTERS[route.chapter].title+' · ':''}簪花寻踪 · 民俗交互体验`;
+  planImageWarmup(background,scene);
 }
 function homeView(){return `<section class="quiet-home"><div class="home-title"><h1><img class="home-title-art" src="assets/art/title-flower-trace.webp" alt="簪花寻踪 · Flower Trace" width="1702" height="515" fetchpriority="high"></h1><p>海风捎来花香，阿嬷在院子里等我。</p><button class="primary" data-action="begin">${state.cursor||state.seen.length||totalCompleted()?'继续这一日':'走进小院'} <span class="arrow">⟶</span></button>${state.seen.length||totalCompleted()?'<button class="text-button" data-action="reset-confirm">从头体验</button>':''}</div></section>`;}
 function startStory(key,index=0){cancelDrag();clearSelection();route={page:'story',key,index};state.cursor={key,index};save();render();window.scrollTo(0,0);}
