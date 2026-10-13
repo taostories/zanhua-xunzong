@@ -56,6 +56,14 @@ let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs=
 let audioContext=null,audioGain=null,audioSources=[],soundOn=false;
 // Warm the browser's image cache without waiting for a page turn or blocking render.
 const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
+const backgrounds=window.ZANHUA_BACKGROUNDS||{};
+const backgroundURL=src=>backgrounds[src]?.src||src;
+function showBackground(src){
+ const entry=backgrounds[src],full=backgroundURL(src);
+ const priority=$('#scene-priority');if(priority&&priority.getAttribute('href')!==full)priority.href=full;
+ // The inline preview paints immediately, even if the full image fails or is slow.
+ $('.landscape').style.backgroundImage=`url('${full}')`+(entry?`,url('${entry.preview}')`:'');
+}
 function planImageWarmup(background,scene){
  const preferred=state.style==='festival'?'Festival':'Everyday',other=preferred==='Festival'?'Everyday':'Festival';
  const keys=(...names)=>names.map(name=>art[name]);
@@ -66,8 +74,9 @@ function planImageWarmup(background,scene){
   ['assets/scene-4.webp',...keys('grandma','seaChat'+preferred,'ending'+preferred,'look'+preferred+'Final','seaChat'+other,'ending'+other,'look'+other+'Final')]
  ];
  const next=route.page==='home'?currentNext():Math.max(0,Math.min(3,scene-1));
- const sources=[background,...$$('#main img').map(img=>img.src),
-  ...chapters.slice(next).flat(),...chapters.slice(0,next).flat(),...Object.values(art)];
+ const orderedChapters=[...chapters.slice(next),...chapters.slice(0,next)];
+ const sources=[backgroundURL(background),...orderedChapters.map(chapter=>backgroundURL(chapter[0])),...$$('#main img').map(img=>img.src),
+  ...orderedChapters.flatMap(chapter=>chapter.slice(1)),...Object.values(art)];
  const ordered=[...new Set(sources.filter(Boolean).map(src=>new URL(src,document.baseURI).href))];
  for(const src of ordered)if(!imageWarmup.entries.has(src))imageWarmup.entries.set(src,{src,status:'pending',attempts:0});
  // Rebuild pending order after navigation/style selection; never restart active downloads.
@@ -130,8 +139,8 @@ function navigate(page,chapter){
 function render(){
   syncWreathArt();
   const scene=route.page==='story'?STORY[route.key].scene:route.page==='game'?(route.chapter+1):route.page==='ending'?4:1;
-  const background=route.page==='home'?'assets/cover-harbor-v2.webp':`assets/scene-${scene}.webp`;
-  $('.landscape').style.backgroundImage=`url('${background}')`;
+ const background=route.page==='home'?'assets/cover-harbor-v2.webp':`assets/scene-${scene}.webp`;
+  showBackground(background);
   document.body.dataset.page=route.page;document.body.dataset.chapter=route.page==='game'?route.chapter+1:'';
   $$('[data-nav]').forEach(n=>n.classList.toggle('active',n.dataset.nav===route.page||(n.dataset.nav==='chapters'&&route.page==='game')));
   const views={home:homeView,chapters:chaptersView,game:gameView,gallery:galleryView,about:aboutView,ending:endingView,story:storyView};

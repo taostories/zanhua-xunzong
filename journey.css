@@ -139,7 +139,7 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 /* Portrait and dialogue form one continuous scene, with an intentional overlap. */
 .chapter-4 .scene-workspace{justify-content:flex-start}
 .sea-chat-layout{justify-content:flex-start;min-height:0;padding-top:0}
-.sea-chat-layout:has(.solo-portrait){padding-top:28px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-content:start;justify-items:center;row-gap:0}
+.sea-chat-layout:has(.solo-portrait){padding-top:44px;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-content:start;justify-items:center;row-gap:0}
 .chapter-4,.seaside-story{--seaside-portrait-width:330px}
 .sea-chat-layout .sea-chat-art.solo-portrait{grid-row:1;width:min(100%,var(--seaside-portrait-width));height:auto;aspect-ratio:3/4;max-height:none;margin:0;display:block;position:relative;z-index:0}
 .seaside-story .story-protagonist{width:min(100%,var(--seaside-portrait-width));height:auto;max-width:100%;aspect-ratio:3/4;object-position:center bottom}
@@ -152,6 +152,9 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 /* Grandma faces the protagonist from the right in story conversations. */
 .story-screen.seaside-story .story-grandma:not(.story-protagonist){left:auto;right:5%;transform:scaleX(-1)}
 @media(max-width:520px){.story-screen.seaside-story .story-grandma:not(.story-protagonist){right:0}}
+
+/* Keep the non-seaside story portraits centered in their scene. */
+.story-screen:not(.seaside-story)>.story-grandma{left:50%;transform:translateX(-50%)}
 
 /* Chapter four uses one portrait stage for story and quiz. Size the visible
    figure by height: the red outfit is square, the everyday image is portrait. */
@@ -172,7 +175,7 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 .seaside-portrait.portrait-grandma{--portrait-height-scale:1.04202;justify-content:flex-end!important}
 .seaside-portrait.portrait-grandma img{transform:scaleX(-1)}
 .seaside-story:not(.photo-story){justify-content:flex-start}
-.seaside-story:not(.photo-story)>.seaside-portrait{margin-top:28px}
+.seaside-story:not(.photo-story)>.seaside-portrait{margin-top:44px}
 .seaside-story:not(.photo-story)>.story-dialogue{
  width:min(900px,100%);margin:-30px auto 22px;position:relative;z-index:1;background:#fff8e9;
 }
