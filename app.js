@@ -81,7 +81,7 @@ function navigate(page,chapter){
 function render(){
   syncWreathArt();
   const scene=route.page==='story'?STORY[route.key].scene:route.page==='game'?(route.chapter+1):route.page==='ending'?4:1;
-  const background=route.page==='home'?'assets/cover-harbor.webp':`assets/scene-${scene}.webp`;
+  const background=route.page==='home'?'assets/cover-harbor-v2.webp':`assets/scene-${scene}.webp`;
   $('.landscape').style.backgroundImage=`url('${background}')`;
   document.body.dataset.page=route.page;document.body.dataset.chapter=route.page==='game'?route.chapter+1:'';
   $$('[data-nav]').forEach(n=>n.classList.toggle('active',n.dataset.nav===route.page||(n.dataset.nav==='chapters'&&route.page==='game')));
@@ -351,4 +351,5 @@ async function clearImportedArt(){try{if(db)await new Promise((resolve,reject)=>
 render();
 (async()=>{db=await openArtDB();artBlobs=await readImported();if(Object.keys(artBlobs).length){await resolveArt();render();}})();
 })();
+
 
