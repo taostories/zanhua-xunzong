@@ -26,7 +26,9 @@ window.ZANHUA_ART = {
   "lookFestival": "",
   "lookFestivalFinal": "",
   "seaChatEveryday": "assets/art/sea-chat-everyday.webp",
-  "seaChatFestival": "assets/art/sea-chat-festival.webp"
+  "seaChatFestival": "assets/art/sea-chat-festival.webp",
+  "endingEveryday": "assets/art/ending-everyday.webp",
+  "endingFestival": "assets/art/ending-festival.webp"
 };
 
 

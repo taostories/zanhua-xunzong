@@ -168,3 +168,15 @@ body[data-page=home] .landscape:after{background:linear-gradient(180deg,#19231c1
 .home-title>.primary,.home-title>.text-button{margin-left:auto;margin-right:auto}
 .home-title>.text-button{color:#fff8e9;text-shadow:0 1px 5px #18231c}
 @media(max-width:520px){.quiet-home{padding:0 0 9vh}.home-title>p{font-size:14px;letter-spacing:.5px;margin:23px 0 27px}}
+
+/* Keep both faces and flower wreaths visible; captions sit below the photograph. */
+.ending-photo{width:min(900px,100%);margin:12px auto 0}
+.ending-photo img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain}
+.photo-story .ending-photo{width:min(850px,100%,max(400px,calc((100dvh - 390px)*16/9)))}
+.photo-story .story-dialogue{margin:0 auto 22px;width:min(850px,100%)}
+.journey-ending.photo-ending{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:12px 0 24px;gap:0}
+.photo-ending .ending-photo{width:min(850px,100%,max(400px,calc((100dvh - 410px)*16/9)));margin-top:0}
+.photo-ending .ending-note{width:min(850px,100%);padding:20px 30px;text-align:center}
+.photo-ending .ending-actions{justify-content:center}
+@media(max-width:520px){.photo-story .ending-photo,.photo-ending .ending-photo{width:100%;margin-top:12px}.photo-story .story-dialogue{padding:18px}.photo-story .story-dialogue>p{min-height:0}.photo-ending .ending-note{padding:20px 18px}.photo-ending .ending-note h1{font-size:26px}.photo-ending .ending-note p{font-size:16px}}
+
