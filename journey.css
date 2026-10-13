@@ -153,6 +153,35 @@ button:focus-visible{outline:3px solid #985c3d;outline-offset:4px}
 .story-screen.seaside-story .story-grandma:not(.story-protagonist){left:auto;right:5%;transform:scaleX(-1)}
 @media(max-width:520px){.story-screen.seaside-story .story-grandma:not(.story-protagonist){right:0}}
 
+/* Chapter four uses one portrait stage for story and quiz. Size the visible
+   figure by height: the red outfit is square, the everyday image is portrait. */
+.chapter-4,.seaside-story{--seaside-portrait-height:430px}
+.sea-chat-layout .sea-chat-art.seaside-portrait,
+.seaside-story:not(.photo-story)>.seaside-portrait{
+ width:min(900px,100%);height:var(--seaside-portrait-height);aspect-ratio:auto;
+ display:flex;align-items:flex-end;justify-content:flex-start;padding:0 8%;
+ position:relative;overflow:hidden;margin:0 auto;flex-shrink:0;
+}
+.sea-chat-art.seaside-portrait img{
+ width:auto;height:calc(100% * var(--portrait-height-scale,1));max-width:none;
+ flex:none;object-fit:contain;object-position:center bottom;mask-image:none;
+ -webkit-mask-image:none;
+}
+.seaside-portrait.portrait-everyday{--portrait-height-scale:1.02477}
+.seaside-portrait.portrait-festival{--portrait-height-scale:1.00294}
+.seaside-portrait.portrait-grandma{--portrait-height-scale:1.04202;justify-content:flex-end!important}
+.seaside-portrait.portrait-grandma img{transform:scaleX(-1)}
+.seaside-story:not(.photo-story){justify-content:flex-start}
+.seaside-story:not(.photo-story)>.seaside-portrait{margin-top:28px}
+.seaside-story:not(.photo-story)>.story-dialogue{
+ width:min(900px,100%);margin:-30px auto 22px;position:relative;z-index:1;background:#fff8e9;
+}
+@media(max-width:520px){
+ .chapter-4,.seaside-story{--seaside-portrait-height:min(88vw,325px)}
+ .sea-chat-layout .sea-chat-art.seaside-portrait,
+ .seaside-story:not(.photo-story)>.seaside-portrait{padding:0;justify-content:center!important}
+}
+
 /* Hair tools keep their transparent PNG while moving: no card, border, fill or label. */
 .drag-ghost.hair-ghost{width:110px!important;min-height:0!important;height:110px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:block!important;transform:translate(-50%,-50%)!important}
 .drag-ghost.hair-ghost img{width:100%!important;height:100%!important;max-height:none!important;object-fit:contain;filter:none}
