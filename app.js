@@ -53,7 +53,7 @@ let state=readSave(), route={page:'home'},selected=null,drag=null,suppressClick=
 let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
 let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
-let audioContext=null,audioGain=null,audioSources=[],soundOn=false,audioTimer=null,musicStep=0,musicNextTime=0;
+let musicAudio=null,soundOn=false,musicRequest=0;
 // Warm the browser's image cache without waiting for a page turn or blocking render.
 const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
 function showBackground(src){
@@ -236,7 +236,7 @@ function nextQuiz(){if(route.page!=='game'||route.chapter!==3||state.quiz.choice
 
 function galleryView(){return `<section><div class="page-heading"><div><div class="eyebrow">A COLLECTION OF FLOWERS</div><h1>把花香，收入图鉴</h1><p class="intro-line">花簪有形，故事长留。点击收藏，听阿嬷说一段旧时光。</p></div><div class="meta">已收藏<br>${ITEMS.filter(i=>owned(i.id)).length} / 3</div></div>${state.completed[3]?'<div class="gallery-banner"><div><h3>花事圆满 · 图鉴全开</h3><p>你已走过四段花事，愿这一份温柔，留在往后的日子里。</p></div><button class="secondary" data-action="ending">重温海边的约定 ↗</button></div>':''}<div class="album-grid">${ITEMS.map(it=>{const has=owned(it.id);return `<article class="album-card ${!has?'locked':''}"><div class="album-art">${has&&hasArt(it.asset)?artImage(it.asset,it.name):`<span class="art-title">${has?it.short:'待花开'}</span>`}<small>${has?'第 '+it.chapter+' 章 · 已收藏':'第 '+it.chapter+' 章解锁'}</small></div><div class="album-card-body"><span class="meta">COLLECTION ${num(it.chapter-1)} / ${it.category}</span><h2>${it.name}</h2><p>${has?it.story:'这段故事还藏在下一程的花香里。循着阿嬷的指引，完成对应章节，就能收藏。'}</p><button class="text-button" ${has?`data-action="item" data-id="${it.id}"`:'data-action="chapters"'}>${has?'展开花簪小记 ↗':'去寻花 ↗'}</button></div></article>`;}).join('')}</div>${state.completed[3]?knowledgeGallery():''}<div class="quiet-note">文化说明：本作以蟳埔女习俗为灵感进行互动改编。花语、花簪奖励和操作步骤为叙事设计，不作为固定民俗规范。人物与场景为艺术表达。</div></section>`;}
 function knowledgeGallery(){return '<section class="complete-album"><h2>这一日，听阿嬷说</h2><div class="flower-album">'+FLOWERS.map(f=>'<article>'+artImage(f.asset,f.name)+'<h3>'+f.name+'</h3><p>'+JOURNEY.flowers[f.id]+'</p></article>').join('')+'</div><div class="sea-memories">'+QUESTIONS.map(q=>'<details><summary>'+q.question+'</summary><p>'+q.branches[1].you+'</p><p>阿嬷：'+q.branches[1].grandma+'</p></details>').join('')+'</div></section>';}
-function aboutView(){return `<section><div class="page-heading"><div><div class="eyebrow">THE LIVING TRADITION</div><h1>花在头上，根在生活里</h1></div></div><div class="about-layout"><img class="about-photo" src="assets/scene-3.webp" alt="民俗故事场景水彩插画"><div class="about-copy"><div class="eyebrow">泉州蟳埔 · 日常里的花事</div><h2>一圈簪花围，<br>一个海边的故事。</h2><p>蟳埔位于福建泉州。当地妇女盘髻簪花的装束，承载着海边生活的记忆。鲜花围绕发髻，随日常、节庆与个人喜好呈现不同的色彩和层次。</p><p>“蟳埔女习俗”于 2008 年列入第二批国家级非物质文化遗产名录，项目类别为民俗。簪花围，是认识这一文化的一扇窗；窗的另一边，是劳动、家庭、邻里和代代相传的生活。</p><p>这段故事从一次久别归来开始：我跟着阿嬷采花、梳发、编花围，也重新认识了她日日簪花的心意。</p><p class="cultural-note">本作中的“阿嬷”为虚构叙事人物，使用带闽南亲切感的普通话，不冒充方言录音或传承人口述。花语与盘髻操作为交互改编；背景为艺术插画，并非蟳埔建筑的实景复原。<br>资料核对入口：<a href="https://www.ihchina.cn/" target="_blank" rel="noopener noreferrer">中国非物质文化遗产网</a>（检索“蟳埔女习俗”）、国务院第二批国家级非遗名录。</p><button class="primary" data-action="chapters">赴一场花事 <span class="arrow">⟶</span></button></div></div></section>`;}
+function aboutView(){return `<section><div class="page-heading"><div><div class="eyebrow">THE LIVING TRADITION</div><h1>花在头上，根在生活里</h1></div></div><div class="about-layout"><img class="about-photo" src="assets/scene-3.webp" alt="民俗故事场景水彩插画"><div class="about-copy"><div class="eyebrow">泉州蟳埔 · 日常里的花事</div><h2>一圈簪花围，<br>一个海边的故事。</h2><p>蟳埔位于福建泉州。当地妇女盘髻簪花的装束，承载着海边生活的记忆。鲜花围绕发髻，随日常、节庆与个人喜好呈现不同的色彩和层次。</p><p>“蟳埔女习俗”于 2008 年列入第二批国家级非物质文化遗产名录，项目类别为民俗。簪花围，是认识这一文化的一扇窗；窗的另一边，是劳动、家庭、邻里和代代相传的生活。</p><p>这段故事从一次久别归来开始：我跟着阿嬷采花、梳发、编花围，也重新认识了她日日簪花的心意。</p><p class="cultural-note">本作中的“阿嬷”为虚构叙事人物，使用带闽南亲切感的普通话，不冒充方言录音或传承人口述。花语与盘髻操作为交互改编；背景为艺术插画，并非蟳埔建筑的实景复原。<br>资料核对入口：<a href="https://www.ihchina.cn/" target="_blank" rel="noopener noreferrer">中国非物质文化遗产网</a>（检索“蟳埔女习俗”）、国务院第二批国家级非遗名录。</p><p class="music-credit">背景音乐：<a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037" target="_blank" rel="noopener noreferrer">Carefree — Kevin MacLeod（incompetech.com）</a><br>依据 <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> 授权使用；已压缩为网页播放版本，旋律未改动。</p><button class="primary" data-action="chapters">赴一场花事 <span class="arrow">⟶</span></button></div></div></section>`;}
 
 
 function portraitReady(){return Boolean(art[chosenStyle()?.after]);}
@@ -355,37 +355,43 @@ function cancelDrag(){guideArc(null);cancelAnimationFrame(dragFrame);if(drag){co
 document.addEventListener('pointercancel',cancelDrag);
 document.addEventListener('lostpointercapture',()=>{if(drag)cancelDrag();});
 window.addEventListener('blur',cancelDrag);
-document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelDrag();if(audioContext?.state==='running')audioContext.suspend();}else if(soundOn)audioContext?.resume();});
-function scheduleMusicNote(time,frequency,duration=.28){
- const osc=audioContext.createOscillator(),gain=audioContext.createGain();
- osc.type='triangle';osc.frequency.setValueAtTime(frequency,time);
- gain.gain.setValueAtTime(.0001,time);gain.gain.exponentialRampToValueAtTime(.055,time+.025);gain.gain.exponentialRampToValueAtTime(.0001,time+duration);
- osc.connect(gain);gain.connect(audioGain);osc.start(time);osc.stop(time+duration+.04);
+function updateMusicButton(loading=false){
+ const button=$('.sound-button');button.setAttribute('aria-pressed',String(soundOn));
+ button.title=soundOn?'关闭背景音乐':'播放 Carefree · Kevin MacLeod';
+ $('.sound-label').textContent=soundOn?(loading?'音乐加载中':'音乐播放中'):'听音乐';
 }
-function pumpMusic(){
- if(!audioContext||!soundOn)return;
- const now=audioContext.currentTime;if(!musicNextTime||musicNextTime<now-.2)musicNextTime=now+.03;
- const notes=[0,2,4,7,9,7,4,2],root=261.63;
- while(musicNextTime<now+.7){
-  const semitone=notes[musicStep%notes.length],octave=musicStep%16>11?2:1;
-  scheduleMusicNote(musicNextTime,root*Math.pow(2,(semitone+12*octave)/12),.26);
-  if(musicStep%4===0)scheduleMusicNote(musicNextTime,root*Math.pow(2,(semitone-12)/12),.34);
-  musicStep++;musicNextTime+=.34;
+function ensureMusic(){
+ if(musicAudio)return musicAudio;
+ musicAudio=new Audio('assets/audio/carefree-kevin-macleod.mp3');
+ musicAudio.preload='none';musicAudio.loop=true;musicAudio.volume=.28;
+ musicAudio.addEventListener('playing',()=>{if(soundOn)updateMusicButton();});
+ musicAudio.addEventListener('waiting',()=>{if(soundOn)updateMusicButton(true);});
+ musicAudio.addEventListener('error',()=>{
+  if(!soundOn)return;soundOn=false;musicRequest++;updateMusicButton();toast('音乐暂时加载失败，点击可重试。');
+ });
+ return musicAudio;
+}
+async function playMusic(){
+ const request=++musicRequest;
+ try{
+  const player=ensureMusic();if(player.error)player.load();
+  await player.play();
+  if(request===musicRequest&&soundOn){if(document.hidden)musicAudio.pause();else updateMusicButton();}
+ }catch(error){
+  if(request!==musicRequest||!soundOn||document.hidden)return;
+  soundOn=false;updateMusicButton();toast('音乐暂时无法播放，请点击重试。');
  }
 }
-function startMusic(){musicStep=0;musicNextTime=0;clearInterval(audioTimer);pumpMusic();audioTimer=setInterval(pumpMusic,120);}
-function stopMusic(){clearInterval(audioTimer);audioTimer=null;musicNextTime=0;}
-async function toggleSound(){
- try{
-  if(!audioContext){
-   const Context=window.AudioContext||window.webkitAudioContext;if(!Context){toast('这个浏览器暂不支持背景音乐。');return;}
-   audioContext=new Context();audioGain=audioContext.createGain();audioGain.gain.value=0;audioGain.connect(audioContext.destination);
-  }
-  await audioContext.resume();soundOn=!soundOn;
-  audioGain.gain.setTargetAtTime(soundOn?.42:0,audioContext.currentTime,.18);
-  if(soundOn)startMusic();else stopMusic();
-  const b=$('.sound-button');b.setAttribute('aria-pressed',String(soundOn));b.title=soundOn?'关闭轻快音乐':'开启轻快音乐';$('.sound-label').textContent=soundOn?'音乐播放中':'听音乐';toast(soundOn?'轻快音乐已开启':'音乐已静音');
- }catch{toast('背景音乐暂时无法播放，请稍后再试。');}
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){cancelDrag();musicRequest++;musicAudio?.pause();}
+ else if(soundOn)playMusic();
+});
+window.addEventListener('pagehide',()=>{musicRequest++;musicAudio?.pause();});
+window.addEventListener('pageshow',()=>{if(soundOn&&!document.hidden)playMusic();});
+function toggleSound(){
+ soundOn=!soundOn;
+ if(soundOn){updateMusicButton(true);playMusic();}
+ else{musicRequest++;musicAudio?.pause();updateMusicButton();}
 }
 function speakItem(id,button){if(!('speechSynthesis' in window)){toast('此设备暂无可用的朗读功能。');return;}if(speechSynthesis.speaking){speechSynthesis.cancel();button.textContent='听这段故事';return;}const it=ITEMS.find(i=>i.id===id),u=new SpeechSynthesisUtterance(it.story);u.lang='zh-CN';u.rate=.86;u.pitch=1;const voice=speechSynthesis.getVoices().find(v=>v.lang.startsWith('zh'));if(voice)u.voice=voice;button.textContent='停止朗读';u.onend=()=>{if(button.isConnected)button.textContent='听这段故事';};u.onerror=()=>{if(button.isConnected)button.textContent='听这段故事';toast('设备语音暂不可用，你也可以阅读这段花簪小记。');};speechSynthesis.speak(u);}
 function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败'));im.src=src;});}

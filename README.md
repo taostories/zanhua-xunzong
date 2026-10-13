@@ -38,3 +38,8 @@ app.js 管理流程；story.js 保存剧情；journey-data.js 保存玩法数据
 已完成的章节可从章节页重玩；重玩不覆盖原收藏和进度。第二章道具无底板，点击木梳出现亮色光标；下一步沿向上箭头收拢头发。
 
 图片加载：当前画面立即请求；首页显示后自动以低优先级预加载后续四章、两种款式与结尾图片，每次最多两张，不需要翻页触发。按当前章节和已选款式调整顺序，同路径只预加载一次。失败或超过 60 秒的请求移到队尾重试一次，不阻塞界面；浏览器缓存可供后续场景复用。源码修改后运行 `node build-web.cjs` 更新带内容指纹的入口资源。
+
+
+## Background music
+
+Carefree — Kevin MacLeod (incompetech.com), licensed under CC BY 4.0. See assets/audio/LICENSE.md for attribution, source and conversion details. This is a complete licensed recording, replacing the synthesized melody. The MP3 is fetched only after clicking the music button, loops at 28% volume, continues across scenes, pauses when the tab is hidden, and resumes from the previous position.

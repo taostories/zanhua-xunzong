@@ -1,0 +1,30 @@
+{
+  "track": {
+    "title": "Carefree",
+    "filename": "Carefree.mp3",
+    "length": "00:03:25",
+    "instruments": "Ukulele, Guitar, Marimba, Glockenspiel, Percussion",
+    "genre": "5",
+    "bpm": "96",
+    "description": "Nothing says \"It'll be okay\" quite like a ukulele.",
+    "feel": "Bouncy, Bright, Calming, Uplifting",
+    "uploaded": "2014-08-16",
+    "isrc": "USUAN1400037",
+    "collection": "17",
+    "sheetmusic": null,
+    "video": "https://youtu.be/sMcWOaJFuw0",
+    "itunes": "https://itunes.apple.com/us/album/carefree/id941913727?i=941913732",
+    "filmmusicURL": null
+  },
+  "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+  "download": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "licensePage": "https://incompetech.com/music/royalty-free/licenses/",
+  "checkedOn": "2026-10-13",
+  "changes": "Transcoded to 96 kbps stereo MP3 for web playback. Musical content unchanged.",
+  "originalSha256": "8433b770a630d9b1594fd484442c677907ece899a4d149954cd2e74fd733e311",
+  "webSha256": "0241979f75ae6b8cae7a6f95e4ef9347ff12198edf022e5176bae2db76d583d8",
+  "originalBytes": 6566713,
+  "webBytes": 2462457,
+  "durationSeconds": 205.139592
+}
