@@ -93,7 +93,7 @@ function pumpImageWarmup(){
    scheduleImageWarmup();
   };
   // A slow/broken file cannot hold a slot forever. Retry once, after other images.
-  const timeout=setTimeout(()=>finish(false),15000);
+  const timeout=setTimeout(()=>finish(false),60000);
   img.onload=()=>finish(true);img.onerror=()=>finish(false);img.src=entry.src;
  }
 }
