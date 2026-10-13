@@ -53,7 +53,7 @@ let state=readSave(), route={page:'home'},selected=null,drag=null,suppressClick=
 let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
 let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
-let musicAudio=null,soundOn=false,musicRequest=0;
+let musicAudio=null,soundOn=false,musicRequest=0,musicLoadPromise=null,musicObjectURL=null,musicProgress=null;
 // Warm the browser's image cache without waiting for a page turn or blocking render.
 const imageWarmup={entries:new Map(),queue:[],active:0,started:false,timer:null};
 function showBackground(src){
@@ -86,6 +86,7 @@ function scheduleImageWarmup(delay=100){
 }
 function pumpImageWarmup(){
  if(!imageWarmup.started)return;
+ if(soundOn&&musicLoadPromise&&!musicObjectURL)return;
  while(imageWarmup.active<2&&imageWarmup.queue.length){
   const entry=imageWarmup.queue.shift();if(entry.status!=='pending')continue;
   entry.status='loading';entry.attempts++;imageWarmup.active++;
@@ -358,11 +359,41 @@ window.addEventListener('blur',cancelDrag);
 function updateMusicButton(loading=false){
  const button=$('.sound-button');button.setAttribute('aria-pressed',String(soundOn));
  button.title=soundOn?'关闭背景音乐':'播放 Carefree · Kevin MacLeod';
- $('.sound-label').textContent=soundOn?(loading?'音乐加载中':'音乐播放中'):'听音乐';
+ $('.sound-label').textContent=soundOn?(loading?(musicProgress===null?'音乐加载中':`音乐加载 ${musicProgress}%`):'音乐播放中'):'听音乐';
+}
+const MUSIC_URL='assets/audio/carefree-kevin-macleod.mp3';
+async function loadCompleteMusic(){
+ if(musicObjectURL)return musicObjectURL;
+ if(musicLoadPromise)return musicLoadPromise;
+ musicLoadPromise=(async()=>{
+  let cache=null,response=null;
+  try{cache=await caches.open('zanhua-music-v1');response=await cache.match(MUSIC_URL);}catch{}
+  let blob;
+  if(response){blob=await response.blob();}
+  else{
+   response=await fetch(MUSIC_URL);if(!response.ok)throw new Error('Music download failed');
+   const total=Number(response.headers.get('content-length'));
+   if(response.body){
+    const reader=response.body.getReader(),chunks=[];let received=0;
+    while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);received+=value.byteLength;
+     musicProgress=total>0?Math.min(99,Math.floor(received/total*100)):null;
+     if(soundOn)updateMusicButton(true);
+    }
+    if(total>0&&received!==total)throw new Error('Incomplete music download');
+    blob=new Blob(chunks,{type:'audio/mpeg'});
+   }else blob=await response.blob();
+   if(!blob.size)throw new Error('Empty music download');
+   // Cache only a complete recording; storage restrictions must not prevent playback.
+   if(cache)cache.put(MUSIC_URL,new Response(blob,{headers:{'Content-Type':'audio/mpeg'}})).catch(()=>{});
+  }
+  musicObjectURL=URL.createObjectURL(blob);musicProgress=100;return musicObjectURL;
+ })();
+ try{return await musicLoadPromise;}
+ finally{musicLoadPromise=null;scheduleImageWarmup();}
 }
 function ensureMusic(){
  if(musicAudio)return musicAudio;
- musicAudio=new Audio('assets/audio/carefree-kevin-macleod.mp3');
+ musicAudio=new Audio();
  musicAudio.preload='none';musicAudio.loop=true;musicAudio.volume=.28;
  musicAudio.addEventListener('playing',()=>{if(soundOn)updateMusicButton();});
  musicAudio.addEventListener('waiting',()=>{if(soundOn)updateMusicButton(true);});
@@ -374,7 +405,10 @@ function ensureMusic(){
 async function playMusic(){
  const request=++musicRequest;
  try{
-  const player=ensureMusic();if(player.error)player.load();
+  const player=ensureMusic(),src=await loadCompleteMusic();
+  if(request!==musicRequest||!soundOn||document.hidden)return;
+  if(player.src!==src)player.src=src;
+  if(player.error)player.load();
   await player.play();
   if(request===musicRequest&&soundOn){if(document.hidden)musicAudio.pause();else updateMusicButton();}
  }catch(error){
@@ -391,7 +425,7 @@ window.addEventListener('pageshow',()=>{if(soundOn&&!document.hidden)playMusic()
 function toggleSound(){
  soundOn=!soundOn;
  if(soundOn){updateMusicButton(true);playMusic();}
- else{musicRequest++;musicAudio?.pause();updateMusicButton();}
+ else{musicRequest++;musicAudio?.pause();updateMusicButton();scheduleImageWarmup();}
 }
 function speakItem(id,button){if(!('speechSynthesis' in window)){toast('此设备暂无可用的朗读功能。');return;}if(speechSynthesis.speaking){speechSynthesis.cancel();button.textContent='听这段故事';return;}const it=ITEMS.find(i=>i.id===id),u=new SpeechSynthesisUtterance(it.story);u.lang='zh-CN';u.rate=.86;u.pitch=1;const voice=speechSynthesis.getVoices().find(v=>v.lang.startsWith('zh'));if(voice)u.voice=voice;button.textContent='停止朗读';u.onend=()=>{if(button.isConnected)button.textContent='听这段故事';};u.onerror=()=>{if(button.isConnected)button.textContent='听这段故事';toast('设备语音暂不可用，你也可以阅读这段花簪小记。');};speechSynthesis.speak(u);}
 function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('图片加载失败'));im.src=src;});}

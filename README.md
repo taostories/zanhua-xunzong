@@ -43,3 +43,5 @@ app.js 管理流程；story.js 保存剧情；journey-data.js 保存玩法数据
 ## Background music
 
 Carefree — Kevin MacLeod (incompetech.com), licensed under CC BY 4.0. See assets/audio/LICENSE.md for attribution, source and conversion details. This is a complete licensed recording, replacing the synthesized melody. The MP3 is fetched only after clicking the music button, loops at 28% volume, continues across scenes, pauses when the tab is hidden, and resumes from the previous position.
+
+Music buffering update: the complete MP3 is downloaded before playback and played from a local blob URL. The button shows download progress. Only complete downloads are stored in Cache Storage (best effort when browser storage is available); playback and looping then work without continued network access. Pausing while loading prevents delayed autoplay. Background image warmup yields while the requested music is downloading.
