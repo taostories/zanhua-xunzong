@@ -28,3 +28,15 @@
  #world{height:auto;aspect-ratio:16/9;bottom:auto}
  .below{margin-top:8px}
 }
+/* Aligned supplied poses, switched only while the character is moving. */
+.figure{position:relative}
+.figure .walk-frame-b{position:absolute;inset:0;visibility:hidden}
+#player.walking .figure{animation:walk-lift .64s linear infinite}
+#player.walking .walk-frame-a{animation:walk-a .64s steps(1,end) infinite}
+#player.walking .walk-frame-b{animation:walk-b .64s steps(1,end) infinite}
+@keyframes walk-a{0%,100%{visibility:visible}50%{visibility:hidden}}
+@keyframes walk-b{0%,100%{visibility:hidden}50%{visibility:visible}}
+@keyframes walk-lift{0%,50%,100%{translate:0 0}25%,75%{translate:0 -2px}}
+@media(prefers-reduced-motion:reduce){
+ #player.walking .figure,#player.walking .walk-frame-a,#player.walking .walk-frame-b{animation:none}
+}
