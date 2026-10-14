@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>芳花撷取 · 花园采花试玩</title>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="garden.css">
+<script src="garden.js" defer></script>
+</head>
+<body>
+<header><div><small>簪花寻踪 · 独立试玩</small><h1>芳花撷取</h1></div><button id="restart">重新采花</button></header>
+<main>
+ <div class="intro"><p>陪阿嬷，采一篮清晨的花。</p><span id="instructions">移动鼠标带主角走近花丛，点击花朵采摘。</span></div>
+ <section id="garden" aria-label="花园，使用鼠标或方向键移动，点击花朵采摘" tabindex="0">
+  <div id="world">
+   <img class="scenery" src="../assets/scene-1.webp" alt="临海小院，石径穿过繁花" draggable="false">
+   <div id="flowers"></div>
+   <div id="destination" aria-hidden="true"></div>
+   <div id="player" aria-label="采花的我"><div class="figure"><img src="../assets/art/portrait-loose.webp" alt="主角" draggable="false"></div></div>
+  </div>
+  <aside class="basket" aria-label="今日花篮"><img src="../assets/art/basket.webp" alt="竹篮"><div id="collected"></div><p>今日花篮 <strong id="count">0 / 4</strong></p></aside>
+  <div id="hint" role="status">沿着石径，去花边看看。</div>
+  <div id="loading">花园准备中…</div>
+ </section>
+ <div class="below"><span>鼠标跟随 / 方向键移动 / 点击花丛采摘</span><small>动作预览暂用现有半身插画</small></div>
+</main>
+<dialog id="story"><div class="dialogue-head"><img src="../assets/art/grandma.webp" alt="阿嬷"><div><small>阿嬷</small><h2 id="flower-name"></h2></div></div><p id="flower-description"></p><button id="continue">继续采花</button></dialog>
+<dialog id="finish"><small>清晨的花，采齐了</small><h2>满篮花香，带回阿嬷身旁。</h2><p>素馨、白兰、菊花、红花，都收好了。</p><button id="again">再逛一次花园</button></dialog>
+</body></html>
