@@ -50,6 +50,7 @@ function readSave(){
 }
 
 let state=readSave(), route={page:'home'},selected=null,drag=null,suppressClick=false,toastTimer,dragFrame,handledTouchSource=null;
+let gardenCleanup=null,gardenPosition=null;
 let bagOpen=false,dialogueOpen=true,picking=false,flowerModal=false;
 let replaySnapshot=null,replayChapter=null;
 let dialogue='', dialogueSpeaker='阿嬷', art={...window.ZANHUA_ART}, artBlobs={}, db=null, exportBusy=false;
@@ -64,7 +65,7 @@ function planImageWarmup(background,scene){
  const preferred=state.style==='festival'?'Festival':'Everyday',other=preferred==='Festival'?'Everyday':'Festival';
  const keys=(...names)=>names.map(name=>art[name]);
  const chapters=[
-  ['assets/scene-1.webp',...keys('grandma','flowerJasmine','flowerMagnolia','flowerChrysanthemum','flowerRed','basket','itemJasmine')],
+  ['garden-preview/garden-scene.webp','garden-preview/garden-walk-rest.webp','garden-preview/garden-walk-left.webp','garden-preview/garden-walk-right.webp','assets/scene-1.webp',...keys('grandma','flowerJasmine','flowerMagnolia','flowerChrysanthemum','flowerRed','basket','itemJasmine')],
   ['assets/scene-2.webp',...keys('mirrorLoose','toolComb','mirrorSmooth','toolTie','itemFishbone','mirrorGathered','mirrorTied','mirrorPinned')],
   ['assets/scene-3.webp',...keys('wreath'+preferred,'wreath'+other,'look'+preferred,'look'+other)],
   ['assets/scene-4.webp',...keys('grandma','seaChat'+preferred,'ending'+preferred,'look'+preferred+'Final','seaChat'+other,'ending'+other,'look'+other+'Final')]
@@ -134,14 +135,16 @@ function navigate(page,chapter){
   render();window.scrollTo({top:0,behavior:'instant'});$('#main').focus({preventScroll:true});
 }
 function render(){
+  if(gardenCleanup){gardenCleanup();gardenCleanup=null;}
   syncWreathArt();
   const scene=route.page==='story'?STORY[route.key].scene:route.page==='game'?(route.chapter+1):route.page==='ending'?4:1;
- const background=route.page==='home'?'assets/cover-harbor-v2.webp':`assets/scene-${scene}.webp`;
+ const background=route.page==='home'?'assets/cover-harbor-v2.webp':route.page==='game'&&route.chapter===0?'garden-preview/garden-scene.webp':`assets/scene-${scene}.webp`;
   showBackground(background);
   document.body.dataset.page=route.page;document.body.dataset.chapter=route.page==='game'?route.chapter+1:'';
   $$('[data-nav]').forEach(n=>n.classList.toggle('active',n.dataset.nav===route.page||(n.dataset.nav==='chapters'&&route.page==='game')));
   const views={home:homeView,chapters:chaptersView,game:gameView,gallery:galleryView,about:aboutView,ending:endingView,story:storyView};
   $('#main').innerHTML=`<div class="fade-in">${views[route.page]()}</div>`;
+  if(route.page==='game'&&route.chapter===0)gardenCleanup=window.mountZanhuaGarden($('.garden-game'),{flowers:state.flowers,position:gardenPosition,isBlocked:()=>picking||Boolean(state.pendingFlower)||$('#modal').open||bagOpen,onPosition:p=>{gardenPosition=p;},onPick:(id,p)=>{gardenPosition=p;pickFlower(id);}});
   if(route.page==='game'&&route.chapter===0&&state.pendingFlower&&!picking)queueMicrotask(showFlowerDialogue);
   document.title=`${route.page==='game'?CHAPTERS[route.chapter].title+' · ':''}簪花寻踪 · 民俗交互体验`;
   planImageWarmup(background,scene);
@@ -163,24 +166,29 @@ function storyView(){const part=STORY[route.key],p=part.pages[route.index],speak
 
 function getChapterPrompt(i){return ['挑喜欢的花，轻轻采进花篮。','慢慢来，发丝梳顺了，发髻挽稳了，头上的花，才戴得好看。','挑一种你喜欢的样式，咱们把今天采的四种花编在一起。','别紧张，就把今天学到的，慢慢说给他们听。'][i];}
 
-function chaptersView(){return `<section><div class="page-heading"><div><div class="eyebrow">THE FLOWER JOURNEY</div><h1>循着花香，慢慢来</h1><p class="intro-line">跟着阿嬷，走过四段花事。每一次相遇，都留下一份花香。</p></div><div class="meta">花事进度<br>${totalCompleted()} / 4 章</div></div><div class="chapter-grid">${CHAPTERS.map((c,i)=>`<button class="chapter-card" data-action="enter" data-index="${i}" ${!unlocked(i)?'disabled':''} aria-label="第${i+1}章 ${c.title}，${unlocked(i)?'进入体验':'尚未解锁'}"><div class="chapter-cover"><img src="assets/scene-${i+1}.webp" alt="${c.sub}" loading="lazy"><span class="chapter-badge">${['壹','贰','叁','肆'][i]} · ${['晨光','梳妆','花事','日暮'][i]}</span><span class="chapter-status">${state.completed[i]?'已完成 ✓':unlocked(i)?'静候你来':'待花开 · 未解锁'}</span></div><div class="chapter-card-body"><span class="index">CHAPTER ${num(i)}</span><h2>${c.title}</h2><p>${c.desc}</p><footer><span>${unlocked(i)?'收藏 · '+c.reward:'需获得'+CHAPTERS[i-1].reward}</span><span>${unlocked(i)?'⟶':'—'}</span></footer></div></button>`).join('')}</div><div class="quiet-note">阿嬷的话：不必赶路，也不怕放错。每一支收好的簪花都会陪着你，不会因为开启下一章而消失。</div></section>`;}
+function chaptersView(){return `<section><div class="page-heading"><div><div class="eyebrow">THE FLOWER JOURNEY</div><h1>循着花香，慢慢来</h1><p class="intro-line">跟着阿嬷，走过四段花事。每一次相遇，都留下一份花香。</p></div><div class="meta">花事进度<br>${totalCompleted()} / 4 章</div></div><div class="chapter-grid">${CHAPTERS.map((c,i)=>`<button class="chapter-card" data-action="enter" data-index="${i}" ${!unlocked(i)?'disabled':''} aria-label="第${i+1}章 ${c.title}，${unlocked(i)?'进入体验':'尚未解锁'}"><div class="chapter-cover"><img src="${i===0?'garden-preview/garden-scene.webp':'assets/scene-'+(i+1)+'.webp'}" alt="${c.sub}" loading="lazy"><span class="chapter-badge">${['壹','贰','叁','肆'][i]} · ${['晨光','梳妆','花事','日暮'][i]}</span><span class="chapter-status">${state.completed[i]?'已完成 ✓':unlocked(i)?'静候你来':'待花开 · 未解锁'}</span></div><div class="chapter-card-body"><span class="index">CHAPTER ${num(i)}</span><h2>${c.title}</h2><p>${c.desc}</p><footer><span>${unlocked(i)?'收藏 · '+c.reward:'需获得'+CHAPTERS[i-1].reward}</span><span>${unlocked(i)?'⟶':'—'}</span></footer></div></button>`).join('')}</div><div class="quiet-note">阿嬷的话：不必赶路，也不怕放错。每一支收好的簪花都会陪着你，不会因为开启下一章而消失。</div></section>`;}
 
 function bagView(){return '<aside class="bag" aria-label="簪花背包"><div class="bag-heading"><h2>我的花囊</h2><span>'+ITEMS.filter(i=>owned(i.id)).length+' / 3</span></div><div class="bag-list">'+ITEMS.map(it=>'<button class="bag-item" '+(owned(it.id)?'data-action="item" data-id="'+it.id+'"':'disabled')+'>'+(owned(it.id)?artImage(it.asset,it.name):'')+'<span class="item-name">'+it.name+'</span><small>'+(owned(it.id)?'查看花簪小记':'第 '+it.chapter+' 章解锁')+'</small></button>').join('')+'</div><p class="bag-note">花簪只收藏，不消耗</p></aside>';}
 
 function dialogueView(){return `<section class="scene-dialogue ${dialogueOpen?'':'collapsed'}"><button class="speaker-toggle" data-action="dialogue" aria-expanded="${dialogueOpen}" aria-label="${dialogueOpen?'收起这段话':'展开这段话'}">${esc(dialogueSpeaker||(dialogueOpen?'收起':'展开'))}${dialogueOpen?' −':' ＋'}</button>${dialogueOpen?`<p id="grandma-text" aria-live="polite">${esc(dialogue)}</p>`:''}</section>`;}
-function gameView(){const i=route.chapter,c=CHAPTERS[i];return `<section class="scene-play chapter-${i+1}"><div class="scene-label"><div><small>${['清晨 · 小院','午前 · 窗边','午后 · 屋檐','日暮 · 海边'][i]}</small><h1>${c.title}</h1></div><button class="secondary" data-action="bag-toggle" aria-expanded="${bagOpen}">花篮 · ${ITEMS.filter(it=>owned(it.id)).length}</button></div><div class="scene-workspace">${[flowersBoard,hairBoard,ringBoard,dressBoard][i]()}${bagOpen?`<div class="bag-drawer">${bagView()}</div>`:''}</div>${i===3?'':dialogueView()}</section>`;}
+function gameView(){const i=route.chapter,c=CHAPTERS[i];return `<section class="scene-play chapter-${i+1}"><div class="scene-label"><div><small>${['清晨 · 小院','午前 · 窗边','午后 · 屋檐','日暮 · 海边'][i]}</small><h1>${c.title}</h1></div><button class="secondary" data-action="bag-toggle" aria-expanded="${bagOpen}">花篮 · ${ITEMS.filter(it=>owned(it.id)).length}</button></div><div class="scene-workspace">${[flowersBoard,hairBoard,ringBoard,dressBoard][i]()}${bagOpen?`<div class="bag-drawer">${bagView()}</div>`:''}</div>${i===0||i===3?'':dialogueView()}</section>`;}
 
-function flowersBoard(){return '<div class="gathering"><div class="flower-groups">'+FLOWERS.map(f=>'<button class="flower-clump" data-action="pick-flower" data-id="'+f.id+'" '+(state.flowers.includes(f.id)?'disabled style="visibility:hidden;pointer-events:none" aria-hidden="true" tabindex="-1"':'')+' aria-label="采摘'+f.name+'">'+artImage(f.asset,f.name)+'<span>'+f.name+'</span></button>').join('')+'</div><div class="basket-area '+(art.basket?'has-basket':'')+'" aria-label="今日花篮">'+artImage('basket','竹篮','basket-art')+'<div class="basket-flowers">'+state.flowers.map(id=>{const f=FLOWERS.find(f=>f.id===id);return '<span>'+artImage(f.asset,f.name)+'<small>'+f.name+'</small></span>';}).join('')+'</div>'+artImage('basket','','basket-front')+'<p>今日花篮 <span>'+state.flowers.length+' / 4 种</span></p>'+(art.basket?'':'<small class="asset-status">竹篮插画待补</small>')+'</div></div>';}
+function flowersBoard(){return `<div class="garden-game"><p id="instructions" class="garden-instructions">移动鼠标带主角走近花丛，点击花朵采摘。</p> <section id="garden" aria-label="花园，使用鼠标或方向键移动，点击花朵采摘" tabindex="0">
+  <div id="world">
+   <img class="scenery" src="garden-preview/garden-scene.webp" alt="临海小院，素馨、白兰、菊花和红花生长在石径两侧" draggable="false">
+   <div id="flowers"></div>
+   <div id="destination" aria-hidden="true"></div>
+   <div id="player" aria-label="采花的我"><div class="figure"><img class="walk-frame-rest" src="garden-preview/garden-walk-rest.webp" alt="提着竹篮的Q版主角" draggable="false"><img class="walk-frame-a" src="garden-preview/garden-walk-left.webp" alt="" aria-hidden="true" draggable="false"><img class="walk-frame-b" src="garden-preview/garden-walk-right.webp" alt="" aria-hidden="true" draggable="false"></div></div>
+  </div>
+  <aside class="basket" aria-label="今日花篮"><img src="assets/art/basket.webp" alt="竹篮"><div id="collected"></div><p>今日花篮 <strong id="count">0 / 4</strong></p></aside>
+  <div id="hint" role="status">沿着石径，去花边看看。</div>
+  <div id="loading">花园准备中…</div>
+ </section>
+</div>`;}
 async function pickFlower(id){
  if(picking||state.pendingFlower||route.page!=='game'||route.chapter!==0||state.completed[0])return;
  const f=FLOWERS.find(f=>f.id===id);if(!f||state.flowers.includes(id))return;picking=true;
- const source=$('.flower-clump[data-id="'+id+'"]'),basket=$('.basket-area');
- if(!state.flowers.includes(id))state.flowers.push(id);state.pickCounts[id]=(state.pickCounts[id]||0)+1;state.pendingFlower=id;save();
- try{if(source&&basket&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
-  const r=source.getBoundingClientRect(),b=basket.getBoundingClientRect(),ghost=document.createElement('div');ghost.className='picked-flight';ghost.innerHTML=artImage(f.asset,f.name);Object.assign(ghost.style,{left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});document.body.append(ghost);
-  source.disabled=true;source.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'});
-  try{await ghost.animate([{transform:'translate(0,0) scale(1)',opacity:1},{transform:'translate('+(b.x+b.width/2-r.x-r.width/2)+'px,'+(b.y+b.height/2-r.y-r.height/2)+'px) scale(.4)',opacity:.2}],{duration:620,easing:'ease-in-out'}).finished;}finally{ghost.remove();}
- }}finally{picking=false;}
+ state.flowers.push(id);state.pickCounts[id]=(state.pickCounts[id]||0)+1;state.pendingFlower=id;save();picking=false;
  if(route.page==='game'&&route.chapter===0){render();showFlowerDialogue();}
 }
 function showFlowerDialogue(){

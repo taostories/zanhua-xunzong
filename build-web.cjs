@@ -2,7 +2,7 @@
 // No dependencies: combine entry files, retaining their original execution order.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const root=__dirname;
-const groups={css:['styles.css','story-layout.css','journey.css'],js:['assets/art-config.js','story.js','journey-data.js','app.js']};
+const groups={css:['styles.css','story-layout.css','journey.css','garden-game.css'],js:['assets/art-config.js','story.js','journey-data.js','garden-game.js','app.js']};
 const outputs={};
 for(const [ext,files] of Object.entries(groups)){
  let text=files.map(file=>fs.readFileSync(path.join(root,file),'utf8')).join(ext==='js'?'\n;\n':'\n');
